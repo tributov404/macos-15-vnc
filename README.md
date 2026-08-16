@@ -9,6 +9,10 @@
 | Браузер (noVNC) | Ничего | Лог шага `Connection info` → `https://xxx.trycloudflare.com/vnc.html` |
 | VNC-клиент | RealVNC Viewer / TigerVNC | `bore.pub:PORT` из того же лога |
 
+## Подключение
+
+Вход: **vncuser** / секрет `VNC_USER_PASSWORD` (Sequoia принимает только учётку, не legacy-VNC пароль). При входе Safari открывается автоматически.
+
 ## Пароли
 
 Подключение по **VNC-паролю** (без логина) — попадаешь сразу в живую сессию `runner` с открытым Safari:

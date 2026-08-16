@@ -14,6 +14,15 @@ sudo dscl . -create /Users/vncuser NFSHomeDirectory /Users/vncuser
 sudo dscl . -passwd /Users/vncuser "$1"
 sudo createhomedir -c -u vncuser > /dev/null
 
+# open Safari automatically when vncuser logs in over VNC (otherwise fresh session is an empty black desktop)
+sudo mkdir -p /Users/vncuser/Library/LaunchAgents
+sudo tee /Users/vncuser/Library/LaunchAgents/com.user.openapps.plist > /dev/null <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict><key>Label</key><string>com.user.openapps</string><key>ProgramArguments</key><array><string>/usr/bin/open</string><string>-a</string><string>Safari</string></array><key>RunAtLoad</key><true/></dict></plist>
+PLIST
+sudo chown -R vncuser:staff /Users/vncuser/Library/LaunchAgents
+
 # never sleep the machine or display
 sudo pmset -a sleep 0 displaysleep 0 disksleep 0
 nohup caffeinate -dis >/dev/null 2>&1 &
