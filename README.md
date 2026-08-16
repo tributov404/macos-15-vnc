@@ -11,8 +11,12 @@
 
 ## Пароли
 
-- **VNC password** — секрет репозитория `VNC_PASSWORD` (максимум 8 символов, так устроен legacy VNC)
-- **Логин в macOS** — `vncuser` / секрет `VNC_USER_PASSWORD`
+При подключении noVNC/RealVNC спросит логин и пароль — вводи **учётку macOS**:
+
+- **Username:** `vncuser`
+- **Password:** секрет репозитория `VNC_USER_PASSWORD`
+
+(Секрет `VNC_PASSWORD` — запасной legacy-VNC пароль на случай, если сервер запросит только пароль.)
 
 ## Как запустить
 

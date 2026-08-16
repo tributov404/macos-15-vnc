@@ -25,6 +25,15 @@ echo "$2" | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
 
+# grant ScreenCapture permission to screensharingd (without it VNC clients get a black screen on macOS 12.1+)
+for CLIENT in com.apple.screensharingd com.apple.ARDAgent; do
+  sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "INSERT OR REPLACE INTO access(service,client,client_type,auth_value,auth_reason,auth_version,indirect_object_identifier_type,indirect_object_identifier,flags,last_modified) VALUES ('kTCCServiceScreenCapture','$CLIENT',1,2,4,1,0,'UNUSED',0,CAST(strftime('%s','now') AS INTEGER))"
+done
+sudo launchctl bootout system/com.apple.screensharing 2>/dev/null || true
+sleep 2
+sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.screensharing.plist 2>/dev/null || true
+sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -restart -agent
+
 # never sleep the machine or display
 sudo pmset -a sleep 0 displaysleep 0 disksleep 0
 nohup caffeinate -dis >/dev/null 2>&1 &
