@@ -14,6 +14,9 @@ sudo dscl . -create /Users/vncuser NFSHomeDirectory /Users/vncuser
 sudo dscl . -passwd /Users/vncuser "$1"
 sudo createhomedir -c -u vncuser > /dev/null
 
+# let VNC clients log straight into the console (runner) session — it has Safari, wallpaper control and AppleEvents
+sudo dscl . -passwd runner "$1"
+
 # enable Remote Management with legacy VNC access
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes
@@ -33,6 +36,10 @@ sudo launchctl bootout system/com.apple.screensharing 2>/dev/null || true
 sleep 2
 sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.screensharing.plist 2>/dev/null || true
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -restart -agent
+
+# colorful wallpaper so the desktop is visibly alive (black default looks like a broken black screen)
+IMG=$(find "/System/Library/Desktop Pictures" -maxdepth 1 -name "*.heic" | head -1)
+osascript -e "tell application \"System Events\" to tell every desktop to set picture to POSIX file \"$IMG\"" || true
 
 # never sleep the machine or display
 sudo pmset -a sleep 0 displaysleep 0 disksleep 0
