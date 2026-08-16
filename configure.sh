@@ -44,6 +44,3 @@ sudo cp /tmp/kcpassword /etc/kcpassword
 sudo chown root:wheel /etc/kcpassword
 sudo chmod 600 /etc/kcpassword
 sudo defaults write /Library/Preferences/com.apple.loginwindow autoLoginUser vncuser
-
-# restart loginwindow: renders the screen and triggers autologin (fixes black framebuffer)
-sudo killall loginwindow || true
