@@ -1,0 +1,81 @@
+name: macOS 15 VNC
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: vnc
+  cancel-in-progress: true
+
+jobs:
+  vnc:
+    runs-on: macos-15
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup VNC
+        env:
+          VNC_USER_PASSWORD: ${{ secrets.VNC_USER_PASSWORD }}
+          VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
+        run: source configure.sh "$VNC_USER_PASSWORD" "$VNC_PASSWORD"
+
+      - name: Setup noVNC web server
+        run: |
+          python3 -m venv /tmp/ws
+          /tmp/ws/bin/pip install --quiet websockify
+          curl -sL https://github.com/novnc/noVNC/archive/refs/heads/master.tar.gz | tar xz -C /tmp
+          nohup /tmp/ws/bin/websockify --web /tmp/noVNC-master --heartbeat 30 6080 localhost:5900 > /tmp/websockify.log 2>&1 &
+          sleep 2
+          curl -sI http://127.0.0.1:6080/vnc.html | head -1
+
+      - name: Start Cloudflare tunnel (browser access)
+        run: |
+          brew install cloudflared bore-cli
+          nohup cloudflared tunnel --url http://localhost:6080 --no-autoupdate > /tmp/cloudflared.log 2>&1 &
+          URL=""
+          for i in $(seq 1 45); do
+            URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cloudflared.log | head -1)
+            [ -n "$URL" ] && break
+            sleep 2
+          done
+          if [ -z "$URL" ]; then
+            echo "cloudflared failed, falling back to localhost.run"
+            nohup ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -R 80:localhost:6080 nokey@localhost.run > /tmp/lhr.log 2>&1 &
+            for i in $(seq 1 30); do
+              URL=$(grep -oE 'https://[a-z0-9.-]+\.lhr\.life' /tmp/lhr.log | head -1)
+              [ -n "$URL" ] && break
+              sleep 2
+            done
+          fi
+          if [ -z "$URL" ]; then
+            echo "::error::no tunnel URL obtained"
+            cat /tmp/cloudflared.log /tmp/lhr.log 2>/dev/null
+            exit 1
+          fi
+          echo "NOVNC_URL=$URL" >> "$GITHUB_ENV"
+
+      - name: Start bore tunnel (native VNC client)
+        run: |
+          nohup bore local 5900 --to bore.pub > /tmp/bore.log 2>&1 &
+          PORT=""
+          for i in $(seq 1 30); do
+            PORT=$(grep -oE 'bore\.pub:[0-9]+' /tmp/bore.log | head -1 | cut -d: -f2)
+            [ -n "$PORT" ] && break
+            sleep 2
+          done
+          echo "BORE_ADDR=bore.pub:$PORT" >> "$GITHUB_ENV"
+
+      - name: Connection info
+        run: |
+          echo "############################################"
+          echo "# Browser (noVNC): $NOVNC_URL/vnc.html"
+          echo "# VNC client:      $BORE_ADDR"
+          echo "# VNC password:    repo secret VNC_PASSWORD"
+          echo "# Login:           vncuser / repo secret VNC_USER_PASSWORD"
+          echo "############################################"
+
+      - name: Keep alive (~5.5h max)
+        run: |
+          END=$((SECONDS+19800))
+          while [ $SECONDS -lt $END ]; do sleep 60; done
