@@ -1,1 +1,1 @@
-# команды отсюда выполняются на Mac каждые ~10 сек (одна и та же строка не повторяется)
+cd /Users/runner/work/macos-15-vnc/macos-15-vnc && { echo "console_user: $(stat -f%Su /dev/console)"; who; } > state.txt && screencapture -x state.png && git add state.txt state.png && git -c user.name=ci -c user.email=ci@local commit -qm state && git push -q origin main && echo pushed
