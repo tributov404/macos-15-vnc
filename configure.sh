@@ -15,7 +15,7 @@ sudo dscl . -passwd /Users/vncuser "$1"
 sudo createhomedir -c -u vncuser > /dev/null
 
 # let VNC clients log straight into the console (runner) session — it has Safari, wallpaper control and AppleEvents
-sudo dscl . -passwd runner "$1"
+sudo dscl . -passwd /Users/runner "$1"
 
 # enable Remote Management with legacy VNC access
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all
