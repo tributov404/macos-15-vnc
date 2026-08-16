@@ -66,6 +66,9 @@ jobs:
           done
           echo "BORE_ADDR=bore.pub:$PORT" >> "$GITHUB_ENV"
 
+      - name: Open Safari
+        run: open -a Safari
+
       - name: Connection info
         run: |
           {
@@ -100,7 +103,16 @@ jobs:
           path: /tmp/screen.png
           if-no-files-found: ignore
 
-      - name: Keep alive (~5.5h max)
+      - name: Keep alive + command polling (~5.5h)
         run: |
           END=$((SECONDS+19800))
-          while [ $SECONDS -lt $END ]; do sleep 60; done
+          LAST="__none__"
+          while [ $SECONDS -lt $END ]; do
+            CMD=$(curl -s -H "Cache-Control: no-cache" "https://raw.githubusercontent.com/tributov404/macos-15-vnc/main/command.txt?t=$(date +%s)" || true)
+            if [ -n "$CMD" ] && [ "$CMD" != "$LAST" ] && [ "$CMD" != "404: Not Found" ]; then
+              echo "Executing: $CMD"
+              bash -c "$CMD" || true
+              LAST="$CMD"
+            fi
+            sleep 10
+          done
