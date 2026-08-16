@@ -1,1 +1,1 @@
-IMG=$(find "/System/Library/Desktop Pictures" -name "*.heic" | head -1); sudo launchctl asuser 1001 sudo -u vncuser osascript -e 'tell application "System Events" to tell every desktop to set picture to POSIX file "'"$IMG"'"' 2>&1 | curl -s -m 8 --data-binary @- "https://webhook.site/90c0eea1-f090-4de0-bc21-70a5a68cd769?stage=vncuser-wallpaper&t=$(date +%s)"
+CU=$(stat -f%Su /dev/console); U=$(id -u "$CU"); echo "console: $CU uid: $U"; sudo launchctl asuser $U sudo -u "$CU" open -a Safari; sleep 2; sudo launchctl asuser $U sudo -u "$CU" open -a "System Settings"
