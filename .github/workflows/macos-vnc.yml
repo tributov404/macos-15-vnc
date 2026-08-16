@@ -68,12 +68,25 @@ jobs:
 
       - name: Connection info
         run: |
+          {
+            echo "## Подключение"
+            echo ""
+            echo "\`NOVNC_URL=$NOVNC_URL\`"
+            echo "\`BORE_ADDR=$BORE_ADDR\`"
+          } >> "$GITHUB_STEP_SUMMARY"
           echo "############################################"
           echo "# Browser (noVNC): $NOVNC_URL/vnc.html"
           echo "# VNC client:      $BORE_ADDR"
           echo "# VNC password:    repo secret VNC_PASSWORD"
           echo "# Login:           vncuser / repo secret VNC_USER_PASSWORD"
           echo "############################################"
+          printf 'Browser (noVNC): %s/vnc.html\nVNC client:      %s\n' "$NOVNC_URL" "$BORE_ADDR" > connection-info.txt
+
+      - name: Upload connection info
+        uses: actions/upload-artifact@v4
+        with:
+          name: connection-info
+          path: connection-info.txt
 
       - name: Keep alive (~5.5h max)
         run: |
